@@ -12,12 +12,12 @@ declare(strict_types=1);
 namespace Windwalker\Database\Schema\Ddl;
 
 use Windwalker\Utilities\Arr;
-use Windwalker\Utilities\StrNormalise;
+use Windwalker\Utilities\StrNormalize;
 
 /**
  * Trait WrapableTrait
  */
-trait WrapableTrait
+trait WrappableTrait
 {
     /**
      * bind
@@ -26,16 +26,16 @@ trait WrapableTrait
      *
      * @return  static
      */
-    public function bind(array $data): static
+    public function fill(array $data): static
     {
         foreach ($data as $key => $datum) {
-            $prop = StrNormalise::toCamelCase($key);
+            $prop = StrNormalize::toCamelCase(strtolower($key));
 
             if (method_exists($this, $prop)) {
                 $this->$prop($datum);
             } elseif (property_exists($this, $prop)) {
                 $this->$prop = $datum;
-            } else {
+            } elseif (method_exists($this, 'setOption')) {
                 $this->setOption($prop, $datum);
             }
         }
@@ -50,13 +50,13 @@ trait WrapableTrait
      *
      * @return  static
      */
-    public static function wrap($data): static
+    public static function wrap(mixed $data): static
     {
         if ($data instanceof static) {
             return $data;
         }
 
-        return (new static())->bind($data);
+        return (new static())->fill($data);
     }
 
     /**
